@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="author" content="Drizvato"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+    <title>LinkHome</title>
+
+    <!-- Custom CSS -->
+    <link href="assets/css/styles.css?v=20210423" rel="stylesheet">
+    <link href="assets/css/index.css" rel="stylesheet">
+
+    <!-- Custom Color Option -->
+    <link href="assets/css/colors.css" rel="stylesheet">
+
+    <!--  Vue and axios -->
+    <!--    <script src="assets/js/common/vue-2.5.16.js"></script>-->
+    <script src="assets/js/common/http_cdn.jsdelivr.net_npm_vue@2.6.14_dist_vue.js"></script>
+    <!-- 引入element样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入element组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="assets/js/common/axios.min.js"></script>
+</head>
+
+<body class="yellow-skin">
+
+<!-- ============================================================== -->
+<!-- Preloader - style you can find in spinners.css -->
+<!-- ============================================================== -->
+<div class="preloader"></div>
+
+<!-- ============================================================== -->
+<!-- Main wrapper - style you can find in pages.scss -->
+<!-- ============================================================== -->
+<div id="app">
+    <div id="main-wrapper">
+
+        <!-- ============================================================== -->
+        <!-- Top header  -->
+        <!-- ============================================================== -->
+        <!-- Start Navigation -->
+
+        <div class="header header-light dark-text">
+    <div class="container">
+        <nav id="navigation" class="navigation navigation-landscape">
+            <div class="nav-header">
+                <a class="nav-brand" href="index.html">
+                    <img src="assets/img/logo.png" class="logo" alt=""/>
+                </a>
+                <a href="city.html" style="display: inline-block; padding: 0 8px; line-height: 24px; color: #140c40; margin-top: 8px; cursor: pointer; border-radius: 14px; border: 2px solid #140c40; font-size: 12px;">
+                    <i class="el-icon-location" style="background-position: -133px -34px; width: 10px; height: 12px; display: inline-block; position: relative; margin-right: 5px; top: 1px;"></i>
+                    {{this.city_name}}
+                </a>
+                <div class="nav-toggle"></div>
+            </div>
+            <div class="nav-menus-wrapper align-to-right" style="transition-property: none;">
+                <ul class="nav-menu" style="display: inline-block;">
+
+                    <li><a href="index.html" style="font-size: 15px;">首页</a></li>
+                    <li><a href="house_list.html" style="font-size: 15px;">二手房</a></li>
+                    <li><a href="house_list.html" style="font-size: 15px;">新房</a></li>
+                    <li><a href="house_list.html?rent_type=whole" style="font-size: 15px;">整租</a></li>
+                    <li><a href="house_list.html?rent_type=share" style="font-size: 15px;">合租</a></li>
+                    <li><a href="house_list.html" style="font-size: 15px;">商业楼盘</a></li>
+                    <li><a href="house_list.html" style="font-size: 15px;">小区</a></li>
+                    <li><a href="helpRent.html" style="font-size: 15px;">求租</a></li>
+                    <li><a href="house_publish.html" style="font-size: 15px;">发布房源</a><li>
+                    <li><a href="house_recommend.html" style="font-size: 15px;">推荐</a><li>
+                    <li><a href="news.html" style="font-size: 15px;">公告资讯</a></li>
+
+                    </li>
+                </ul>
+                <ul class="nav-menu nav-menu-social align-to-right dhsbrd" style="display: inline-block;" v-show="login_register_btn_show">
+                    <li>
+                        <a href="#" data-toggle="modal" id="gotoLogin" data-target="#login" class="text-blue">
+                            <i class="fas fa-user-circle mr-1"></i><span class="dn-lg">登录</span>
+                        </a>
+                    </li>
+                    <li class="add-listing dark-bg">
+                        <a href="#" data-toggle="modal" data-target="#signup" class="theme-cl">
+                            <i class="fas fa-arrow-alt-circle-right mr-1"></i>注册
+                        </a>
+                    </li>
+                </ul>
+                <ul class="nav-menu nav-menu-social align-to-right dhsbrd" style="display: inline-block;" v-show="user_show">
+
+                    <li>
+                        <div class="btn-group account-drop">
+                            <button type="button" class="btn btn-order-by-filt"
+                                    data-toggle="dropdown" aria-haspopup="true"
+                                    aria-expanded="false">
+                                <img :src="'https://eu.ui-avatars.com/api/?background=random&length=1&rounded=true&bold=true&name='+user_info.username"
+                                     class="avater-img"
+                                     alt="">
+                                {{ user_info.username }}
+                            </button>
+
+
+                            <div v-if="user_info.role === 'tenant'" class="dropdown-menu pull-right animated flipInX" style="width: 120px;">
+                                <a href="profile.html">
+                                    <i class="ti-user"></i>个人信息
+                                </a>
+                                <a href="my_home.html">
+                                    <i class="ti-home"></i>我的家
+                                </a>
+                                <a href="order.html">
+                                    <i class="ti-gift"></i>我的订单
+                                </a>
+                                <a href="user_collect.html">
+                                    <i class="ti-bookmark"></i>我的收藏
+                                </a>
+                                <a href="rental_demand_list.html">
+                                    <i class="ti-bookmark"></i>我的求租
+                                </a>
+                                <a href="#" onclick="user_logout()">
+                                    <i class="ti-power-off"></i>退出登录
+                                </a>
+                            </div>
+
+                            <div v-else-if="user_info.role === 'landlord'" class="dropdown-menu pull-right animated flipInX" style="width: 120px;">
+                                <a href="profile.html">
+                                    <i class="ti-user"></i>个人信息
+                                </a>
+                                <a href="house.html">
+                                    <i class="ti-layers"></i>房子管理
+                                </a>
+                                <a href="order.html">
+                                    <i class="ti-gift"></i>订单管理
+                                </a>
+                                <a href="user_collect.html">
+                                    <i class="ti-bookmark"></i>我的收藏
+                                </a>
+                                <a href="#" onclick="user_logout()">
+                                    <i class="ti-power-off"></i>退出登录
+                                </a>
+                            </div>
+
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</div>
+
+        <!-- End Navigation -->
+        <div class="clearfix"></div>
+        <!-- ============================================================== -->
+        <!-- Top header  -->
+
+
+        <!-- ============================ Hero Banner Start================================== -->
+        <div class="image-cover hero_banner" style="background:#334aca url(assets/img/index.jpg) no-repeat;"
+             data-overlay="1">
+            <div class="container">
+
+                <h1 class="big-header-capt mb-0" style="font-weight: 600; font-size: 66px; text-align: left;">开始寻找属于你的家</h1>
+
+
+<!--                <p class="text-center mb-5">搜索你所在的城市的小区或房屋类型吧！</p>-->
+                <!-- Type -->
+                <div class="full_search_box nexio_search lightanic_search hero_search-radius modern">
+                    <div class="search_hero_wrapping">
+                        <form onsubmit="return false">
+
+                            <div class="row">
+
+                                <div class="col-lg-3 col-md-3 col-sm-12">
+                                    <div class="form-group">
+                                        <label>省份名称</label>
+                                        <div class="input-with-icon">
+                                            <el-select filterable placeholder="请选所属省份" id="province"
+                                                       v-model.number="area_index"
+                                                       :change="get_city_list()">
+                                                <el-option v-for="(province_item, index) in area_list"
+                                                           :key="index"
+                                                           :label="province_item.name" :value="index"
+                                                ></el-option>
+                                            </el-select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-3 col-md-3 col-sm-12">
+                                    <div class="form-group">
+                                        <label>城市名称</label>
+                                        <div class="input-with-icon">
+                                            <el-select filterable v-model="house_search_form.city"
+                                                       placeholder="请选择期望城市">
+                                                <el-option v-for="city_item in city_list"
+                                                           :label="city_item.name"
+                                                           :value="city_item.name"></el-option>
+                                            </el-select>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-2 col-md-2 col-sm-12">
+                                    <div class="form-group">
+                                        <label>租房类型</label>
+                                        <div class="input-with-icon">
+                                            <select id="selectRentType" v-model="house_search_form.rent_type" name="rent_type" class="form-control">
+                                                <option value="">不限</option>
+                                                <option value="whole">整租</option>
+                                                <option value="share">合租</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-md-3 col-sm-12">
+                                    <div class="form-group">
+                                        <label>月租金范围</label>
+                                        <div class="input-with-icon">
+                                            <select id="rent_money_range" v-model="house_search_form.rent_money_range" name="rent_money_range" class="form-control" >
+                                                <option value="">不限</option>
+                                                <option value="0;999">1000以内</option>
+                                                <option value="1000;1999">1000-1999</option>
+                                                <option value="2000;3999">2000-3999</option>
+                                                <option value="4000;5999">4000-5999</option>
+                                                <option value="6000;7999">6000-7999</option>
+                                                <option value="8000;9999">8000-9999</option>
+                                                <option value="10000;14999">10000-14999</option>
+                                                <option value="15000;19999">15000-19999</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-md-2 col-sm-12 small-padd">
+                                    <div class="form-group none">
+                                        <button @click="search_home_house()" class="btn search-btn">搜索</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </form>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- ============================ Hero Banner End ================================== -->
+
+        <!-- ============================ 最新发布整租 Start ================================== -->
+        <section class="gray-simple">
+            <div class="container">
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-7 col-md-8">
+                        <div class="sec-heading center">
+                            <h2>最新整租</h2>
+                            <p>给你推荐了一些最新的发布的整租房子</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Single Property -->
+                    <div class="col-lg-4 col-md-6 col-sm-12" v-for="(item, index) in home_house_info.whole_house_list">
+                        <div class="single_property_style property_style_2 modern el_scale">
+
+                            <div class="listing_thumb_wrapper">
+                                <div class="property_gallery_slide-thumb">
+                                    <a @click="show_house_detail(item.house_id, item.rent_type)">
+                                        <img :src="item.index_img"
+                                             class="img-fluid mx-auto" alt=""></a>
+                                </div>
+                            </div>
+
+                            <div class="property_caption_wrappers pb-0">
+                                <div class="property_short_detail">
+                                    <div class="pr_type_status">
+                                        <h4 class="pr-property_title mb-1">
+                                            <a @click="show_house_detail(item.house_id, item.rent_type)"
+                                               href="javascript:void(0);">
+                                                {{ item.title }}</a>
+                                        </h4>
+                                        <div class="listing-location-name">
+                                            <a @click="show_house_detail(item.house_id, item.rent_type)"
+                                               href="javascript:void(0);">
+                                                {{ item.address }} / {{ item.area }}m²</a>
+                                        </div>
+                                    </div>
+                                    <div class="property-real-price">
+                                        <a @click="show_house_detail(item.house_id, item.rent_type)"
+                                           class="cl-blue el_scale">
+                                            ¥ {{ item.rent_money }}<span class="price_status">/月</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern_property_footer">
+                                <div class="property-lists flex-1">
+                                    <ul>
+                                        <li class="el_scale"><span class="flatcons">
+                                        <img src="assets/img/bed.svg" alt=""></span>{{ item.bedroom_num }} 卧室
+                                        </li>
+                                        <li class="el_scale"><span class="flatcons">
+                                        <img src="assets/img/bath.svg"
+                                             alt=""></span>{{ item.living_room_num }} 客厅
+                                        </li>
+                                        <li class="el_scale">
+                                            <span class="flatcons">
+                                                <img src="assets/img/bath.svg" alt="">
+                                            </span>{{ item.toilet_num }} 卫生间
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="fp_types el_scale"
+                                     v-if="user_collect_house_ids.indexOf(item.house_id) == -1">
+
+                                    <a href="javascript:void(0)" class="markHouse"
+                                       @click="user_collect_house_index(item.house_id)">
+                                        收藏
+                                    </a>
+                                </div>
+
+                                <span v-else class="el_scale">
+                                            <img
+                                                    src="assets/img/collect.svg"
+                                                    @dblclick="cancel_house_collect(item.house_id)"
+                                                    alt="已收藏" title="已收藏/双击取消"/>
+                                        </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-md-12 col-sm-12" v-if="home_house_info.whole_house_list.length === 0">
+                        <el-empty description="暂无整租房源"></el-empty>
+                    </div>
+                </div>
+
+                <div class="row" v-if="home_house_info.whole_house_list.length > 0">
+                    <div class="col-lg-12 col-md-12 col-sm-12 text-center">
+                        <a href="house_list.html?rent_type=whole" class="btn btn-theme arrow-btn bg-2">查看更多
+                            <span><i class="ti-arrow-right"></i></span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        <div class="clearfix"></div>
+        <!-- ============================ 最新发布整租 End ================================== -->
+
+
+        <!-- ============================ 最新发布合租 Start ================================== -->
+        <section class="gray-simple">
+            <div class="container">
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-7 col-md-8">
+                        <div class="sec-heading center">
+                            <h2>最新合租</h2>
+                            <p>给你推荐了一些最新的发布的合租房子</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Single Property -->
+                    <div class="col-lg-4 col-md-6 col-sm-12" v-for="(item, index) in home_house_info.share_house_list">
+                        <div class="single_property_style property_style_2 modern el_scale">
+
+                            <div class="listing_thumb_wrapper">
+                                <div class="property_gallery_slide-thumb">
+                                    <a @click="show_house_detail(item.house_id, item.rent_type)">
+                                        <img :src="item.index_img"
+                                             class="img-fluid mx-auto" alt=""></a>
+                                </div>
+                            </div>
+
+                            <div class="property_caption_wrappers pb-0">
+                                <div class="property_short_detail">
+                                    <div class="pr_type_status">
+                                        <h4 class="pr-property_title mb-1">
+                                            <a @click="show_house_detail(item.house_id, item.rent_type)">
+                                                {{ item.title }}</a>
+                                        </h4>
+                                        <div class="listing-location-name">
+                                            <a @click="show_house_detail(item.house_id, item.rent_type)">
+                                                {{ item.city }} {{ item.district }} / {{ item.area }}m²</a>
+                                        </div>
+                                    </div>
+                                    <div class="property-real-price">
+                                        <a @click="show_house_detail(item.house_id, item.rent_type)" class="cl-blue">
+                                            ¥ {{ item.rent_money }}<span class="price_status">/月</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern_property_footer">
+                                <div class="property-lists flex-1">
+                                    <ul>
+                                        <li><span class="flatcons">
+                                        <img src="assets/img/bed.svg" alt=""></span>{{ item.bedroom_num }} 卧室
+                                        </li>
+                                        <li><span class="flatcons">
+                                        <img src="assets/img/bath.svg"
+                                             alt=""></span>{{ item.living_room_num }} 客厅
+                                        </li>
+                                        <li>
+                                            <span class="flatcons">
+                                                <img src="assets/img/bath.svg" alt="">
+                                            </span>{{ item.toilet_num }} 卫生间
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="fp_types"><a href="javascript:void(0)" class="markHouse" data-id="1"
+                                                         onclick="submitMark(1)">收藏</a></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-md-12 col-sm-12" v-if="home_house_info.share_house_list.length === 0">
+                        <el-empty description="暂无合租房源"></el-empty>
+                    </div>
+                </div>
+
+                <div class="row" v-if="home_house_info.share_house_list.length > 0">
+                    <div class="col-lg-12 col-md-12 col-sm-12 text-center">
+                        <a href="house_list.html?rent_type=share" class="btn btn-theme arrow-btn bg-2">查看更多
+                            <span><i class="ti-arrow-right"></i></span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        <div class="clearfix"></div>
+        <!-- ============================ 最新发布合租 End ================================== -->
+
+        <!-- ============================ 最新发布合租 Start ================================== -->
+        <section class="gray-simple">
+            <div class="container">
+
+                <div class="row justify-content-center">
+                    <div class="col-lg-7 col-md-8">
+                        <div class="sec-heading center">
+                            <h2>热门房源</h2>
+                            <p>给你推荐了一些热门的房子</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Single Property -->
+                    <div class="col-lg-4 col-md-6 col-sm-12" v-for="(item, index) in home_house_info.share_house_list">
+                        <div class="single_property_style property_style_2 modern el_scale">
+
+                            <div class="listing_thumb_wrapper">
+                                <div class="property_gallery_slide-thumb">
+                                    <a @click="show_house_detail(item.house_id, item.rent_type)">
+                                        <img :src="item.index_img"
+                                             class="img-fluid mx-auto" alt=""></a>
+                                </div>
+                            </div>
+
+                            <div class="property_caption_wrappers pb-0">
+                                <div class="property_short_detail">
+                                    <div class="pr_type_status">
+                                        <h4 class="pr-property_title mb-1">
+                                            <a @click="show_house_detail(item.house_id, item.rent_type)">
+                                                {{ item.title }}</a>
+                                        </h4>
+                                        <div class="listing-location-name">
+                                            <a @click="show_house_detail(item.house_id, item.rent_type)">
+                                                {{ item.city }} {{ item.district }} / {{ item.area }}m²</a>
+                                        </div>
+                                    </div>
+                                    <div class="property-real-price">
+                                        <a @click="show_house_detail(item.house_id, item.rent_type)" class="cl-blue">
+                                            ¥ {{ item.rent_money }}<span class="price_status">/月</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modern_property_footer">
+                                <div class="property-lists flex-1">
+                                    <ul>
+                                        <li><span class="flatcons">
+                                        <img src="assets/img/bed.svg" alt=""></span>{{ item.bedroom_num }} 卧室
+                                        </li>
+                                        <li><span class="flatcons">
+                                        <img src="assets/img/bath.svg"
+                                             alt=""></span>{{ item.living_room_num }} 客厅
+                                        </li>
+                                        <li>
+                                            <span class="flatcons">
+                                                <img src="assets/img/bath.svg" alt="">
+                                            </span>{{ item.toilet_num }} 卫生间
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="fp_types"><a href="javascript:void(0)" class="markHouse" data-id="1"
+                                                         onclick="submitMark(1)">收藏</a></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-md-12 col-sm-12" v-if="home_house_info.share_house_list.length === 0">
+                        <el-empty description="暂无合租房源"></el-empty>
+                    </div>
+                </div>
+
+                <div class="row" v-if="home_house_info.share_house_list.length > 0">
+                    <div class="col-lg-12 col-md-12 col-sm-12 text-center">
+                        <a href="house_list.html?rent_type=share" class="btn btn-theme arrow-btn bg-2">查看更多
+                            <span><i class="ti-arrow-right"></i></span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+        <div class="clearfix"></div>
+        <!-- ============================ 最新发布合租 End ================================== -->
+
+
+        <!-- ============================ Footer Start ================================== -->
+        <footer class="dark-footer skin-dark-footer style-2" style="padding-top: 0;">
+
+            <div class="footer-bottom">
+                <div class="container">
+                    <div class="row align-items-center">
+
+                        <div class="col-lg-12 col-md-12">
+                            <p class="mb-0">© 2024 LinkHome</p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- ============================ Footer End ================================== -->
+
+        <!-- 登录弹出框 Modal -->
+        <div class="modal fade" id="login" tabindex="-1" role="dialog" aria-labelledby="registermodal"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered login-pop-form" role="document">
+                <header class="modal_content_header">
+                    <div class="hm_nav">
+                        <h3 class="hm_nav_title">登录</h3>
+                        <span class="mod-close" data-dismiss="modal" aria-hidden="true"><i class="ti-close"></i></span>
+                    </div>
+                </header>
+                <div class="modal-content" id="registermodal">
+                    <div class="modal-body">
+                        <div class="login-form">
+                            <form id="loginForm">
+
+                                <div class="form-group">
+                                    <label>账号</label>
+                                    <div class="input-with-icon">
+                                        <input type="text" class="form-control" name="account"
+                                               v-model="loginForm.account"
+                                               placeholder="请输入用户名或手机号">
+                                        <i class="ti-user"></i>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>密码</label>
+                                    <div class="input-with-icon">
+                                        <input type="password" class="form-control" name="password"
+                                               v-model="loginForm.password"
+                                               placeholder="请输入账号密码">
+                                        <i class="ti-unlock"></i>
+                                    </div>
+                                </div>
+                                <span class="error_tip" v-show="error_login_show">{{ error_login_msg }}</span>
+                                <div class="form-group">
+                                    <button type="button" @click="submitLogin()"
+                                            class="btn btn-md full-width pop-login bg-2">登录
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="mt-3"><i class="ti-user mr-1"></i>忘记密码? <a href="#" data-toggle="modal"
+                                                                                 data-target="#forget"
+                                                                                 class="link">点此重置</a></p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Modal -->
+
+        <!-- 注册 Modal -->
+        <div class="modal fade" id="signup" tabindex="-1" role="dialog" aria-labelledby="sign-up" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered login-pop-form" role="document">
+                <header class="modal_content_header">
+                    <div class="hm_nav">
+                        <h3 class="hm_nav_title">注册</h3>
+                        <span class="mod-close" data-dismiss="modal" aria-hidden="true"><i class="ti-close"></i></span>
+                    </div>
+                </header>
+                <div class="modal-content" id="sign-up">
+                    <div class="modal-body">
+                        <div class="login-form">
+                            <form id="registerForm" onsubmit="return false">
+
+                                <div class="row">
+
+                                    <div class="col-lg-12 col-md-12">
+                                        <div class="form-group">
+                                            <label>用户名</label>
+                                            <div class="input-with-icon">
+                                                <input type="text" name="username" required
+                                                       v-model="registerForm.username" @blur="check_username()"
+                                                       class="form-control" placeholder="请输入用户名">
+                                                <i class="ti-user"></i>
+                                            </div>
+                                        </div>
+                                        <span class="error_tip"
+                                              v-show="error_username_show">{{ error_username_msg }}</span>
+                                    </div>
+
+                                    <div class="col-lg-12 col-md-12">
+                                        <div class="form-group">
+                                            <label>手机号</label>
+                                            <div class="input-with-icon">
+                                                <input type="text" required name="mobile" v-model="registerForm.mobile"
+                                                       @blur="check_mobile()" @input="verify_mobile()"
+                                                       class="form-control" placeholder="手机号">
+                                                <i class="ti-mobile"></i>
+                                            </div>
+                                        </div>
+                                        <span class="error_tip" v-show="error_mobile_show">{{ error_mobile_msg }}</span>
+                                    </div>
+
+                                    <div class="col-lg-12 col-md-12">
+                                        <div class="form-group form-inline">
+                                            <div class="input-with-icon">
+                                                <input style="width: 64%" type="text" required name="sms_code"
+                                                       v-model="registerForm.sms_code" class="form-control"
+                                                       placeholder="请输入手机验证码">
+                                                <i class="ti-mobile"></i>
+                                                <button style="width: 35%" :disabled="sms_code_btn_disable"
+                                                        @click="send_sms_code()" class="btn btn-md bg-2">{{ sms_code_tip
+                                                    }}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <span class="error_tip"
+                                              v-show="error_sms_code_show">{{ error_sms_code_msg }}</span>
+                                    </div>
+                                    <div class="col-lg-12 col-md-12">
+                                        <div class="form-group">
+                                            <label>密码</label>
+                                            <div class="input-with-icon">
+                                                <input @blur="check_password()" type="password" required name="password"
+                                                       v-model="registerForm.password" class="form-control"
+                                                       placeholder="请输入6-20位的密码">
+                                                <i class="ti-unlock"></i>
+                                            </div>
+                                        </div>
+                                        <span class="error_tip" v-show="error_password_show">请输入6-20位的密码</span>
+                                    </div>
+
+                                    <div class="col-lg-12 col-md-12">
+                                        <div class="form-group">
+                                            <label>角色</label>
+                                            <div class="simple-input">
+                                                <select name="role" v-model="registerForm.role" class="form-control">
+                                                    <option value="tenant">租客</option>
+                                                    <option value="landlord">房东</option>
+                                                    <option value="steward">管家</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="submit" @click="submitRegister()"
+                                            class="btn btn-md full-width pop-login bg-2">创建账号
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Modal -->
+
+        <!-- 找回密码弹出框 Modal -->
+        <div class="modal fade" id="forget" tabindex="-1" role="dialog" aria-labelledby="forgetmodal"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered login-pop-form" role="document">
+                <header class="modal_content_header">
+                    <div class="hm_nav">
+                        <h3 class="hm_nav_title">找回密码</h3>
+                        <span class="mod-close" data-dismiss="modal" aria-hidden="true"><i class="ti-close"></i></span>
+                    </div>
+                </header>
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="login-form">
+                            <form id="forgetForm">
+
+                                <div class="form-group">
+                                    <label>账号</label>
+                                    <div class="input-with-icon">
+                                        <input type="text" class="form-control" name="userName" placeholder="账号">
+                                        <i class="ti-user"></i>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>邮箱地址</label>
+                                    <div class="input-with-icon">
+                                        <input type="email" class="form-control" name="email"
+                                               placeholder="注册时填写的电子邮箱地址">
+                                        <i class="ti-unlock"></i>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <button type="button" onclick="submitForget()"
+                                            class="btn btn-md full-width pop-login bg-2">重置密码
+                                    </button>
+                                </div>
+
+                            </form>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="mt-3"><i class="ti-user mr-1"></i>我们会向您的邮箱发送一封邮件，请注意查收</p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- End Modal -->
+
+        <!-- End Video Modal -->
+        <a id="back2Top" class="top-scroll" title="Back to top" href="#"><i class="ti-arrow-up"></i></a>
+
+
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- End Wrapper -->
+<!-- ============================================================== -->
+
+<!-- ============================================================== -->
+<!-- All Jquery -->
+<!-- ============================================================== -->
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/layui/layui.js"></script>
+<script src="assets/js/popper.min.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/ion.rangeSlider.min.js"></script>
+<script src="assets/js/select2.min.js"></script>
+<script src="assets/js/jquery.magnific-popup.min.js"></script>
+<script src="assets/js/slick.js"></script>
+<script src="assets/js/slider-bg.js"></script>
+<script src="assets/js/lightbox.js"></script>
+<script src="assets/js/custom.js"></script>
+<script type="text/javascript"
+        src="https://api.map.baidu.com/getscript?type=webgl&v=1.0&ak=kbLXI7qqmJqYE02CfTjtuPhxffkHxr2N"></script>
+<script src="assets/js/common/md5.min.js"></script>
+<script src="assets/js/common/constants.js"></script>
+<script src="assets/js/common/utils.js"></script>
+<script src="assets/js/user/index.js"></script>
+<!-- ============================================================== -->
+<!-- This page plugins -->
+<!-- ============================================================== -->
+
+</body>
+</html>

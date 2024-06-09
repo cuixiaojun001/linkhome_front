@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="author" content="Drizvato"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+
+    <title>LinkHome</title>
+
+    <!-- Custom CSS -->
+    <link href="assets/css/styles.css?v=20210423" rel="stylesheet">
+
+    <!-- Custom Color Option -->
+    <link href="assets/css/colors.css" rel="stylesheet">
+
+    <!--  Vue and axios -->
+    <!--    <script src="assets/js/common/vue-2.5.16.js"></script>-->
+    <script src="assets/js/common/http_cdn.jsdelivr.net_npm_vue@2.6.14_dist_vue.js"></script>
+    <!-- 引入element样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入element组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="assets/js/common/axios.min.js"></script>
+
+</head>
+
+<body class="yellow-skin">
+
+<!-- ============================================================== -->
+<!-- Preloader - style you can find in spinners.css -->
+<!-- ============================================================== -->
+<div class="preloader"></div>
+
+<!-- ============================================================== -->
+<!-- Main wrapper - style you can find in pages.scss -->
+<!-- ============================================================== -->
+<div id="app">
+    <div id="main-wrapper">
+
+        <el-dialog
+                title="订单详情"
+                :visible.sync="order_detail_show"
+                width="70%"
+                center>
+            <div v-if="order_detail_item">
+
+                <div style="float: left">
+                    <a :href="'house_detail.html?house_id=' + order_detail_item.house_id">
+                        <img class="el_scale" style="display: block;margin-right: 1rem; border-radius: 20px;"
+                             :src="order_detail_item.house_info.index_img" width="360" height="320">
+                    </a>
+
+                </div>
+                <div style="display: inline;">
+                    <div>
+                        <div class="seal" style="position: absolute;right: -12px;top: 45px;">
+                            <div class="seal-son">
+                                    <span class="seal-lg-text">
+                                        <span v-if="order_detail_item.state === order_state_enum.payed">
+                                            已支付
+                                        </span>
+                                        <span v-else-if="order_detail_item.state === order_state_enum.ordered">
+                                            已预订
+                                        </span>
+                                        <span v-else-if="order_detail_item.state === order_state_enum.no_pay">
+                                            未支付
+                                        </span>
+                                        <span v-else-if="order_detail_item.state === order_state_enum.finished">
+                                            已完成
+                                        </span>
+                                        <span v-else-if="order_detail_item.state === order_state_enum.canceled">
+                                            已取消
+                                        </span>
+                                    </span>
+                                <span class="seal-sm-text">
+                                        {{ order_detail_item.update_ts }}
+                                    </span>
+                            </div>
+                        </div>
+                        <div class="block">
+                            <span>租赁日期: </span>
+                            <el-date-picker v-if="order_detail_item.state === order_state_enum.no_pay"
+                                            v-model="rental_date_range"
+                                            type="daterange"
+                                            range-separator=" - "
+                                            start-placeholder="开始日期"
+                                            end-placeholder="结束日期"
+                                            format="yyyy 年 MM 月 dd 日"
+                                            value-format="yyyy-MM-dd"
+                            >
+                            </el-date-picker>
+                            <el-date-picker v-else
+                                            v-model="rental_date_range"
+                                            type="daterange"
+                                            range-separator=" - "
+                                            start-placeholder="开始日期"
+                                            end-placeholder="结束日期"
+                                            format="yyyy 年 MM 月 dd 日"
+                                            value-format="yyyy-MM-dd"
+                                            disabled
+                            >
+                            </el-date-picker>
+                            <el-popover
+                                    placement="top-start"
+                                    title="租赁日期说明"
+                                    width="200"
+                                    trigger="hover" s
+                                    content="支持修改租赁日期，成功支付订单自动更新">
+                                <i slot="reference" class="el-icon-question"></i>
+                            </el-popover>
+                        </div>
+                    </div>
+                    <br/>
+                    <div class="property_short_detail">
+                        <h6>
+                            <a :href="'house_detail.html?house_id=' + order_detail_item.house_id">
+                                {{ order_detail_item.house_info.title }}</a>
+                        </h6>
+                        <p>
+                            <a :href="'house_detail.html?house_id=' + order_detail_item.house_id">
+                                {{ order_detail_item.house_info.address }}</a>
+                        </p>
+
+                    </div>
+                    <br/>
+                    <div>
+                        <h6>房源租赁费用明细：</h6>
+                        <div style="text-indent: 1rem;">
+                            <p>
+                                <span class="order_text">租金支付类型: &nbsp;</span>
+                                <span class="order_text">押</span>
+                                <span class="price_style">{{ order_detail_item.house_info.deposit_ratio }}</span>
+                                <span class="order_text">付</span>
+                                <span class="price_style">{{ order_detail_item.house_info.pay_ratio }}</span>
+                            </p>
+                            <p>
+                                <span class="order_text">租金: &nbsp;</span>
+                                <span class="price_style">¥ {{ order_detail_item.house_info.rent_money }}</span>/月
+                                <span class="order_text" style="margin-left: 2rem">押金: &nbsp;</span>
+                                <span class="price_style">¥ {{ order_detail_item.deposit_fee }}</span>
+                                <span class="order_text" style="margin-left: 2rem">管理费: &nbsp;</span>
+                                <span class="price_style">¥ {{ order_detail_item.house_info.strata_fee }}</span>
+                                <el-popover
+                                        placement="top-start"
+                                        title="管理费说明"
+                                        width="200"
+                                        trigger="hover" s
+                                        content="管理费包含街道管理费和清洁费用等">
+                                    <i slot="reference" class="el-icon-question"></i>
+                                </el-popover>
+                            </p>
+                            <p>
+                                <span class="order_text">预定金: &nbsp;</span>
+                                <span class="price_style"
+                                      style="color: #f33066">¥ {{ order_detail_item.bargain_money }}</span>
+                                <el-popover
+                                        placement="top-start"
+                                        title="预定金说明"
+                                        width="350"
+                                        trigger="hover" s
+                                        content="支付了房源预定金，别人就不可以再租赁这个房源，如果如期未补充全额，房源还是会上架租赁，并且扣除房源预定金">
+                                    <i slot="reference" class="el-icon-question"></i>
+                                </el-popover>
+                                <span class="order_text" style="margin-left: 2rem">租赁费用总计: </span>
+                                <span class="price_style"
+                                      style="color: #f33066">¥ {{ order_detail_item.pay_money }}</span>
+                                <el-popover
+                                        placement="top-start"
+                                        title="租赁总费用说明"
+                                        width="200"
+                                        trigger="hover" s
+                                        content="租赁总费用 = 租金 + 押金 + 管理费">
+                                    <i slot="reference" class="el-icon-question"></i>
+                                </el-popover>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <span slot="footer" class="dialog-footer">
+                <span v-if="order_detail_item.state === order_state_enum.no_pay">
+                    <el-button type="danger" @click="deposit_pay_order(order_detail_item.order_id)">支付定金</el-button>
+                    <el-button type="primary" @click="full_pay_order(order_detail_item.order_id)">支付全额</el-button>
+                </span>
+
+                <span v-else-if="order_detail_item.state === order_state_enum.ordered">
+                    <el-button type="primary" @click="pay_order_balance(order_detail_item.order_id)">支付余款</el-button>
+                </span>
+
+            </span>
+        </el-dialog>
+
+        <!-- ============================================================== -->
+        <!-- Top header  -->
+        <!-- ============================================================== -->
+        <!-- Start Navigation -->
+        <div class="header header-light dark-text">
+            <div class="container">
+                <nav id="navigation" class="navigation navigation-landscape">
+                    <div class="nav-header">
+                        <a class="nav-brand" href="index.html">
+                            <img src="assets/img/logo.png" class="logo" alt=""/>
+                        </a>
+                        <div class="nav-toggle"></div>
+                    </div>
+                    <div class="nav-menus-wrapper" style="transition-property: none;">
+                        <ul class="nav-menu">
+
+                            <li><a href="index.html" style="font-size: 15px;">首页</a></li>
+                            <li><a href="house_list.html?rent_type=whole" style="font-size: 15px;">整租</a></li>
+                            <li><a href="house_list.html?rent_type=share" style="font-size: 15px;">合租</a></li>
+                            <li><a href="helpRent.html" style="font-size: 15px;">求租</a></li>
+                            <li><a href="news.html" style="font-size: 15px;">公告资讯</a></li>
+
+                            </li>
+                        </ul>
+                        <ul class="nav-menu nav-menu-social align-to-right dhsbrd" v-show="login_register_btn_show">
+
+                            <li>
+                                <a href="#" data-toggle="modal" id="gotoLogin" data-target="#login" class="text-blue">
+                                    <i class="fas fa-user-circle mr-1"></i><span class="dn-lg">登录</span>
+                                </a>
+                            </li>
+                            <li class="add-listing dark-bg">
+                                <a href="#" data-toggle="modal" data-target="#signup" class="theme-cl">
+                                    <i class="fas fa-arrow-alt-circle-right mr-1"></i>注册
+                                </a>
+                            </li>
+                        </ul>
+                        <ul class="nav-menu nav-menu-social align-to-right dhsbrd" v-show="user_show">
+
+                            <li>
+                                <div class="btn-group account-drop">
+                                    <button type="button" class="btn btn-order-by-filt"
+                                            data-toggle="dropdown" aria-haspopup="true"
+                                            aria-expanded="false">
+                                        <img :src="'https://eu.ui-avatars.com/api/?background=random&length=1&rounded=true&bold=true&name='+user_info.username"
+                                             class="avater-img"
+                                             alt="">
+                                        {{ user_info.username }}
+                                    </button>
+
+
+                                    <div v-if="user_info.role === 'tenant'"
+                                         class="dropdown-menu pull-right animated flipInX" style="width: 120px;">
+                                        <a href="profile.html">
+                                            <i class="ti-user"></i>个人信息
+                                        </a>
+                                        <a href="my_home.html">
+                                            <i class="ti-home"></i>我的家
+                                        </a>
+                                        <a href="order.html">
+                                            <i class="ti-gift"></i>我的订单
+                                        </a>
+                                        <a href="user_collect.html">
+                                            <i class="ti-bookmark"></i>我的收藏
+                                        </a>
+                                        <a href="rental_demand_list.html">
+                                            <i class="ti-bookmark"></i>我的求租
+                                        </a>
+                                        <a href="#" onclick="user_logout()">
+                                            <i class="ti-power-off"></i>退出登录
+                                        </a>
+                                    </div>
+
+                                    <div v-else-if="user_info.role === 'landlord'"
+                                         class="dropdown-menu pull-right animated flipInX" style="width: 120px;">
+                                        <a href="profile.html">
+                                            <i class="ti-user"></i>个人信息
+                                        </a>
+                                        <a href="house.html">
+                                            <i class="ti-layers"></i>房子管理
+                                        </a>
+                                        <a href="order.html">
+                                            <i class="ti-gift"></i>订单管理
+                                        </a>
+                                        <a href="user_collect.html">
+                                            <i class="ti-bookmark"></i>我的收藏
+                                        </a>
+                                        <a href="#" onclick="user_logout()">
+                                            <i class="ti-power-off"></i>退出登录
+                                        </a>
+                                    </div>
+
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+
+        <!-- End Navigation -->
+        <div class="clearfix"></div>
+        <!-- ============================================================== -->
+        <!-- Top header  -->
+        <!-- ============================================================== -->
+
+        <!-- ============================ Agency List Start ================================== -->
+        <section id="contract_box" style="display: none" class="gray-simple">
+
+            <div class="container">
+
+                <!-- row Start -->
+                <div class="row">
+
+                    <div class="col-lg-12 col-md-12">
+                        <div class="property_block_wrap style-2">
+                            <div>
+                                <button class="btn btn-dark" @click="print_contract()">打印合同</button>
+                                <button class="btn btn-info" @click="order_list_back()">返回订单</button>
+                            </div>
+                            <div class="seal"
+                                 style="position: absolute;right: -12px;top: 30px;">
+                                <div class="seal-son">
+                                    <span class="seal-lg-text">
+                                        <span v-if="order_detail_item.state === order_state_enum.payed">
+                                            已生效
+                                        </span>
+                                        <span v-if="order_detail_item.state === order_state_enum.ordered">
+                                            已生效
+                                        </span>
+                                        <span v-else-if="order_detail_item.state === order_state_enum.no_pay">
+                                            未生效
+                                        </span>
+                                        <span v-else-if="order_detail_item.state === order_state_enum.finished">
+                                            已结束
+                                        </span>
+                                    </span>
+                                    <span class="seal-sm-text">
+                                        {{ order_detail_item.update_ts }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div id="contract_content" style="padding: 10px;">
+                            </div>
+                            <!--                            <div style="text-align: center;margin-top: 50px;">-->
+                            <!--                                合同已生效-->
+                            <!--                            </div>-->
+                            <div style="text-align: center;margin: 20px;">
+                                <button class="btn btn-dark" @click="print_contract()">打印合同</button>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <!-- /row -->
+
+            </div>
+
+        </section>
+        <!-- ============================ Agency List End ================================== -->
+
+        <!-- ============================ User Dashboard ================================== -->
+        <section id="user_center" class="p-0">
+            <div class="container-fluid p-0">
+
+                <div class="row">
+
+                    <div class="col-lg-3 col-md-4 col-sm-12">
+                        <div class="property_dashboard_navbar">
+
+                            <div class="dash_user_menues">
+                                <ul>
+                                    <li><a href="profile.html"><i
+                                            class="ti-user"></i>个人信息</a></li>
+
+                                    <li v-if="user_info.role == 'landlord'"><a href="house.html"><i
+                                            class="ti-layers"></i>房子管理</a></li>
+                                    <li v-else><a
+                                            href="my_home.html"><i class="ti-home"></i>我的家</a></li>
+                                    <li class="active"><a
+                                            href="order.html"><i class="ti-gift"></i>订单管理</a></li>
+                                    <li><a href="user_collect.html"><i
+                                            class="ti-bookmark"></i>我的收藏</a></li>
+                                    <li><a href="rental_demand_list.html"><i
+                                            class="ti-pencil"></i>求租管理</a></li>
+                                    <li><a href="reset_password.html"><i
+                                            class="ti-unlock"></i>密码修改</a></li>
+                                    <li><a href="#" onclick="user_logout()"><i class="ti-power-off"></i>退出登录</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-9 col-md-8 col-sm-12">
+                        <div class="dashboard-body">
+
+                            <div class="dashboard-wraper">
+
+                                <!-- Bookmark Property -->
+                                <div class="frm_submit_block">
+                                    <h4>订单管理</h4>
+                                </div>
+
+                                <div style="margin-bottom: 10px;">
+
+                                    <form class="form-inline" action="/admin/order">
+                                        <el-select v-model="order_search_state" filterable placeholder="请选择订单的状态">
+                                            <el-option
+                                                    v-for="item in order_state_list"
+                                                    :key="item.key"
+                                                    :label="item.label"
+                                                    :value="item.key">
+                                            </el-option>
+                                        </el-select>
+                                        &nbsp;<el-button @click="search_order_by_state()" type="primary"
+                                                         icon="el-icon-search">搜索
+                                    </el-button>
+                                    </form>
+
+                                </div>
+                                <table class="property-table-wrap responsive-table bkmark">
+
+                                    <tbody>
+                                    <tr>
+                                        <th><i class="fa fa-file-text"></i> 订单信息</th>
+                                        <th>租客</th>
+                                        <th>房东</th>
+                                        <th>操作</th>
+                                    </tr>
+                                    <tr v-for="(item, index) in user_orders" :key="index">
+                                        <td class="dashboard_propert_wrapper">
+                                            <a :href="'house_detail.html?house_id=' + item.house_info.house_id">
+                                                <img class="el_scale" :src="item.house_info.index_img" alt="">
+                                            </a>
+                                            <div class="title">
+                                                <h4><a :href="'house_detail.html?house_id=' + item.house_info.house_id"
+                                                       target="_blank">{{ item.house_info.title }}</a></h4>
+                                                <span>{{ item.house_info.address }}</span>
+                                                <span class="table-property-price">
+                                                开始时间：{{ item.start_date }}<br/>
+                                                到期时间：{{ item.end_date }}
+                                            </span>
+                                                <span class="table-property-price">
+                                                预定金：¥ {{ item.bargain_money }}<br/>
+                                                总金额：¥ {{ item.pay_money }}
+                                            </span>
+                                            </div>
+
+                                        </td>
+                                        <td>
+                                            {{ item.user_info.real_name }}<br/>{{ item.user_info.mobile }}
+                                        </td>
+                                        <td>
+                                            {{ item.landlord_info.real_name }}<br/>{{ item.landlord_info.mobile }}
+                                        </td>
+                                        <td style="position: relative;">
+                                            <button class="btn btn-dark" @click="show_contract(index)">
+                                                查看合同
+                                            </button>
+                                            <button v-if="item.state === order_state_enum.no_pay" class="btn btn-danger"
+                                                    @click="show_order_detail(index)"
+                                                    style="margin-top: 0.5rem">支付定金
+                                            </button>
+                                            <button v-else-if="item.state === order_state_enum.ordered"
+                                                    class="btn btn-danger" @click="show_order_detail(index)"
+                                                    style="margin-top: 0.5rem">支付余款
+                                            </button>
+                                            <button class="btn btn-info" @click="show_order_detail(index)"
+                                                    style="margin-top: 0.5rem">查看详情
+                                            </button>
+                                            <div class="seal" style="position: absolute;right: -15px;top: 8px;">
+                                                <div class="seal-son">
+                                                    <span class="seal-lg-text">
+                                                        <span v-if="item.state === order_state_enum.payed">
+                                                            已支付
+                                                        </span>
+                                                        <span v-else-if="item.state === order_state_enum.ordered">
+                                                            已预订
+                                                        </span>
+                                                        <span v-else-if="item.state === order_state_enum.no_pay">
+                                                            未支付
+                                                        </span>
+                                                        <span v-else-if="item.state === order_state_enum.finished">
+                                                            已完成
+                                                        </span>
+                                                        <span v-else-if="item.state === order_state_enum.canceled">
+                                                            已取消
+                                                        </span>
+                                                    </span>
+                                                    <span class="seal-sm-text">
+                                                        {{ item.update_ts }}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <div v-if="user_orders.length === 0">
+                                    <el-empty description="暂无订单"></el-empty>
+                                </div>
+
+                            </div>
+
+                            <!-- Pagination 分页 -->
+                            <template>
+                                <div style="margin-top: 1rem" class="block">
+                                    <el-pagination
+                                            background
+                                            @size-change="handleSizeChange"
+                                            @current-change="handleCurrentChange"
+                                            :current-page="current_page_num"
+                                            :page-sizes="page_sizes"
+                                            :page-size="limit"
+                                            layout="total, sizes, prev, pager, next, jumper"
+                                            :total="order_total">
+                                    </el-pagination>
+                                </div>
+                            </template>
+
+                            <div class="row">
+                                <div class="col-md-12 col-lg-12 mt-4">
+                                    <footer class="text-center">
+                                        <p class="mb-0">© 2024 LinkHome. All Rights Reserved</p>
+                                    </footer>
+                                </div>
+                            </div>
+                            <!-- row -->
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- ============================ User Dashboard End ================================== -->
+        <!-- ============================ Footer Start ================================== -->
+        <footer class="dark-footer skin-dark-footer style-2" style="padding-top: 0;">
+
+            <div class="footer-bottom">
+                <div class="container">
+                    <div class="row align-items-center">
+
+                        <div class="col-lg-12 col-md-12">
+                            <p class="mb-0">© 2024 LinkHome</p>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!-- ============================ Footer End ================================== -->
+        <!-- End Video Modal -->
+        <a id="back2Top" class="top-scroll" title="Back to top" href="#"><i class="ti-arrow-up"></i></a>
+
+
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- End Wrapper -->
+<!-- ============================================================== -->
+
+<!-- ============================================================== -->
+<!-- All Jquery -->
+<!-- ============================================================== -->
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/layui/layui.js"></script>
+<script src="assets/js/popper.min.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/ion.rangeSlider.min.js"></script>
+<script src="assets/js/select2.min.js"></script>
+<script src="assets/js/jquery.magnific-popup.min.js"></script>
+<script src="assets/js/slick.js"></script>
+<script src="assets/js/slider-bg.js"></script>
+<script src="assets/js/lightbox.js"></script>
+<script src="assets/js/imagesloaded.js"></script>
+<script src="assets/js/custom.js"></script>
+<script src="assets/js/common/md5.min.js"></script>
+<script src="assets/js/common/constants.js"></script>
+<script src="assets/js/common/utils.js"></script>
+<script src="assets/js/order/order.js"></script>
+<!-- ============================================================== -->
+<!-- This page plugins -->
+<!-- ============================================================== -->
+</body>
+</html>
