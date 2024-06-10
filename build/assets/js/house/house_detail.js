@@ -3,6 +3,8 @@ const get_user_house_collects_url = api_domain + '/api/v1/house/user_collects/{u
 const cancel_user_house_collect_url = api_domain + '/api/v1/house/user_collects';
 const get_house_details_url = api_domain + '/api/v1/house/houses/{house_id}';
 const get_house_facilities_url = api_domain + '/api/v1/house/facilities';
+const send_house_comments_url = api_domain + '/api/v1/comment/publish';
+const send_house_reply_comments_url = api_domain + '/api/v1/comment/reply/publish';
 const get_user_orders_url = api_domain + '/api/v1/order/orders/{user_id}';
 const create_order_url = get_user_orders_url
 
@@ -85,6 +87,8 @@ let vm = new Vue({
             finished: 'finished', // 已完成
             canceled: 'canceled', // 已取消
         },
+
+        // 评论数据
         btnShow: false,
         index:'0',
         replyComment:'',
@@ -93,7 +97,45 @@ let vm = new Vue({
         myId:0,
         to:'',
         toId:-1,
-        comments:[]
+        comments:[
+            {
+                name:'Lana Del Rey',
+                comment_id: 1,
+                user_id: 2,
+                id:19870621,
+                headImg:'https://ae01.alicdn.com/kf/Hd60a3f7c06fd47ae85624badd32ce54dv.jpg',
+                comment:'我发布一张新专辑Norman Fucking Rockwell,大家快来听啊',
+                time:'2019年9月16日 18:43',
+                commentNum:2,
+                like:15,
+                inputShow:false,
+                reply:[
+                    {
+                        from:'Taylor Swift',
+                        fromId:19891221,
+                        fromHeadImg:'https://ae01.alicdn.com/kf/H94c78935ffa64e7e977544d19ecebf06L.jpg',
+                        to:'Lana Del Rey',
+                        toId:19870621,
+                        comment:'我很喜欢你的新专辑！！',
+                        time:'2019年9月16日 18:43',
+                        commentNum:1,
+                        like:15,
+                        inputShow:false
+                    },
+                    {
+                        from:'Ariana Grande',
+                        fromId:1123,
+                        fromHeadImg:'https://ae01.alicdn.com/kf/Hf6c0b4a7428b4edf866a9fbab75568e6U.jpg',
+                        to:'Lana Del Rey',
+                        toId:19870621,
+                        comment:'别忘记宣传我们的合作单曲啊',
+                        time:'2019年9月16日 18:43',
+                        commentNum:0,
+                        like:5,
+                        inputShow:false
+                    }]
+            },
+        ]
     },
     directives: {clickoutside},
     created() {
@@ -444,11 +486,14 @@ let vm = new Vue({
                 a.time = time
                 a.commentNum = 0
                 a.like = 0
+                a.house_id = parseInt(this.house_id)
+                a.user_id = parseInt(this.user_info.user_id)
                 // 同步到后端
-                axios.get(get_house_facilities_url, {'headers': get_token_headers()}).then(resp => {
+                axios.post(send_house_comments_url, a, {'headers': get_token_headers()}).then(resp => {
                     if (resp.status === 200 && resp.data.code === 0) {
-                        this.all_house_facility = resp.data.data.house_facility_list
-                        console.log(this.all_house_facility)
+                        a.comment_id = resp.data.data.comment_id
+                        // this.all_house_facility = resp.data.data.house_facility_list
+                        // console.log(this.all_house_facility)
                     }
                 }).catch(error => {
                     console.log(error)
@@ -461,6 +506,7 @@ let vm = new Vue({
             }
         },
         sendCommentReply(i,j){
+            console.log("发布追评论" + this.comments[i])
             if(!this.replyComment){
                 this.$message({
                     showClose: true,
@@ -478,6 +524,19 @@ let vm = new Vue({
                 a.time = time
                 a.commentNum = 0
                 a.like = 0
+                a.comment_id = parseInt(this.comments[i].comment_id)
+                a.from_user_id = parseInt(this.user_info.user_id)
+                a.to_user_id = parseInt(this.comments[i].id)
+                console.log(this.comments[i])
+                // 同步到后端
+                axios.post(send_house_reply_comments_url, a, {'headers': get_token_headers()}).then(resp => {
+                    if (resp.status === 200 && resp.data.code === 0) {
+                        a.comment_id = resp.data.data.comment_id
+                    }
+                }).catch(error => {
+                    console.log(error)
+                })
+
                 this.comments[i].reply.push(a)
                 this.replyComment = ''
                 document.getElementsByClassName("reply-comment-input")[i].innerHTML = ""

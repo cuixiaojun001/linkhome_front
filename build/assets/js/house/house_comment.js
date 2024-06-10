@@ -135,6 +135,7 @@ let v = new Vue({
             return this.comments[i].inputShow
         },
         sendComment(){
+            console.log("sendComment")
             if(!this.replyComment){
                 this.$message({
                     showClose: true,
@@ -155,10 +156,11 @@ let v = new Vue({
                 this.comments.push(a)
                 this.replyComment = ''
                 input.innerHTML = '';
-
+                console.log("house_commment; a:" + a)
             }
         },
         sendCommentReply(i,j){
+            console.log(sendCommnetReply)
             if(!this.replyComment){
                 this.$message({
                     showClose: true,
